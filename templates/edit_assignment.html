@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h1>Edit Assignment</h1>
+
+    <form method="POST">
+
+        <label>Assignment Title</label>
+        <input type="text" name="title"
+               value="{{ assignment.title }}" required>
+
+        <label>Subject</label>
+        <input type="text" name="subject"
+               value="{{ assignment.subject }}" required>
+
+        <label>Description</label>
+        <textarea name="description">{{ assignment.description or '' }}</textarea>
+
+        <label>Due Date</label>
+        <input type="date" name="due_date"
+               value="{{ assignment.due_date.isoformat() }}"
+               required>
+
+        <label>Priority</label>
+        <select name="priority" required>
+            <option value="High"
+                {% if assignment.priority == 'High' %}selected{% endif %}>
+                High
+            </option>
+
+            <option value="Medium"
+                {% if assignment.priority == 'Medium' %}selected{% endif %}>
+                Medium
+            </option>
+
+            <option value="Low"
+                {% if assignment.priority == 'Low' %}selected{% endif %}>
+                Low
+            </option>
+        </select>
+
+        <button type="submit">Update Assignment</button>
+
+    </form>
+
+    <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+</div>
+
+{% endblock %}

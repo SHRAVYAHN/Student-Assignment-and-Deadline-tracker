@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h1>Add New Assignment</h1>
+
+    <form method="POST">
+
+        <label>Assignment Title</label>
+        <input type="text" name="title"
+               placeholder="Example: Java Inheritance"
+               required>
+
+        <label>Subject</label>
+        <input type="text" name="subject"
+               placeholder="Example: Java"
+               required>
+
+        <label>Description</label>
+        <textarea name="description"
+                  placeholder="Enter assignment details"></textarea>
+
+        <label>Due Date</label>
+        <input type="date" name="due_date" required>
+
+        <label>Priority</label>
+        <select name="priority" required>
+            <option value="">Select Priority</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+
+        <button type="submit">Save Assignment</button>
+
+    </form>
+
+    <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+</div>
+
+{% endblock %}

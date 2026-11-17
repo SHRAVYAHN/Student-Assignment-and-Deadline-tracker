@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="form-container">
+
+    <h1>Create Student Account</h1>
+
+    <p>Register to manage your assignments and deadlines.</p>
+
+    <form method="POST">
+
+        <label>Full Name</label>
+        <input type="text"
+               name="name"
+               placeholder="Enter your name"
+               required>
+
+        <label>Email Address</label>
+        <input type="email"
+               name="email"
+               placeholder="Enter your email"
+               required>
+
+        <label>Password</label>
+        <input type="password"
+               name="password"
+               placeholder="Create password"
+               required>
+
+        <button type="submit">Register</button>
+
+    </form>
+
+    <p>
+        Already have an account?
+        <a href="{{ url_for('login') }}">Login here</a>
+    </p>
+
+</div>
+
+{% endblock %}
