@@ -9,7 +9,7 @@ from models import db, User,Assignment
 app = Flask(__name__)
 
 # Application configuration
-app.config['SECRET_KEY'] = 'student-tracker-dev-key-change-later'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'local-development-key-change-before-deployment')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
     'sqlite:///assignments.db'
