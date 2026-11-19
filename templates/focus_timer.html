@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Focus Timer — StudyFlow{% endblock %}
+{% block content %}
+<div class="welcome-row"><div><div class="eyebrow">STUDY ZONE</div><h1>Focus Timer</h1><p class="muted">Choose a session and give one task your full attention.</p></div><a class="text-link" href="{{ url_for('dashboard') }}">← Dashboard</a></div>
+<section class="panel focus-page-panel">
+ <div class="focus-clock-wrap"><span class="eyebrow">TIME REMAINING</span><div class="focus-page-time" id="focus-time">25:00</div><p class="muted" id="focus-status">Ready when you are</p></div>
+ <div class="focus-presets"><button class="focus-preset selected" type="button" data-minutes="25">25 min <small>Focus</small></button><button class="focus-preset" type="button" data-minutes="50">50 min <small>Deep work</small></button><button class="focus-preset" type="button" data-minutes="5">5 min <small>Break</small></button></div>
+ <div class="focus-page-actions"><button class="primary-btn" id="focus-toggle" type="button">▶ Start</button><button class="quiet-btn" id="focus-reset" type="button">↺ Reset</button></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+(()=>{let duration=25*60,remaining=duration,interval=null;const display=document.getElementById('focus-time'),status=document.getElementById('focus-status'),toggle=document.getElementById('focus-toggle'),reset=document.getElementById('focus-reset'),presets=[...document.querySelectorAll('.focus-preset')];const paint=()=>display.textContent=String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');const stop=()=>{if(interval){clearInterval(interval);interval=null;}};presets.forEach(button=>button.addEventListener('click',()=>{stop();duration=Number(button.dataset.minutes)*60;remaining=duration;presets.forEach(item=>item.classList.toggle('selected',item===button));toggle.textContent='▶ Start';status.textContent='Ready when you are';paint();}));toggle.addEventListener('click',()=>{if(interval){stop();toggle.textContent='▶ Resume';status.textContent='Timer paused';return;}if(remaining<=0)remaining=duration;toggle.textContent='Ⅱ Pause';status.textContent='Stay focused — you are doing great';interval=setInterval(()=>{remaining--;paint();if(remaining<=0){stop();toggle.textContent='↻ Start again';status.textContent='Session complete. Great work!';}},1000);});reset.addEventListener('click',()=>{stop();remaining=duration;paint();toggle.textContent='▶ Start';status.textContent='Ready when you are';});paint();})();
+</script>
+{% endblock %}
