@@ -143,6 +143,24 @@ def dashboard():
         overdue=overdue
     )
     
+
+# Separate page showing every assignment for the signed-in student
+@app.route('/assignments')
+@login_required
+def assignments():
+    all_assignments = Assignment.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Assignment.due_date.asc()).all()
+    return render_template('assignments.html', assignments=all_assignments)
+
+
+# Dedicated focus timer page
+@app.route('/focus-timer')
+@login_required
+def focus_timer():
+    return render_template('focus_timer.html')
+
+
 #Assignment
 
 @app.route('/add-assignment', methods=['GET', 'POST'])
