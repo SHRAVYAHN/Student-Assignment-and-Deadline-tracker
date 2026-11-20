@@ -101,3 +101,38 @@ def test_focus_session_validation():
         create_logged_in_student(client)
         response = client.post("/focus-session", json={"minutes": 0})
         assert response.status_code == 400
+
+
+def test_deadline_dna_simulates_delay_without_changing_real_deadline():
+    with app.test_client() as client:
+        create_logged_in_student(client)
+        client.post("/add-assignment", data={"title": "DSA Lab", "subject": "DSA", "description": "Linked list work", "due_date": "2026-12-05", "priority": "High"})
+        with app.app_context():
+            assignment = Assignment.query.filter_by(title="DSA Lab").first()
+            assignment_id = assignment.id
+            original_due = assignment.due_date
+        page = client.get("/deadline-dna")
+        assert page.status_code == 200
+        assert b"Deadline DNA" in page.data
+        response = client.post("/deadline-dna/simulate", json={"assignment_id": assignment_id, "delay_days": 3, "capacity_hours": 4, "effort_hours": 5})
+        assert response.status_code == 200
+        result = response.get_json()
+        assert result["ok"] is True
+        assert result["delay_days"] == 3
+        assert result["simulated_due"] != result["original_due"]
+        with app.app_context():
+            assert db.session.get(Assignment, assignment_id).due_date == original_due
+
+
+def test_deadline_dna_rejects_another_students_assignment():
+    with app.test_client() as client:
+        create_logged_in_student(client)
+        response = client.post("/deadline-dna/simulate", json={"assignment_id": 9999, "delay_days": 2, "capacity_hours": 4, "effort_hours": 3})
+        assert response.status_code == 404
+
+
+def test_deadline_dna_validates_simulation_inputs():
+    with app.test_client() as client:
+        create_logged_in_student(client)
+        response = client.post("/deadline-dna/simulate", json={"assignment_id": 1, "delay_days": 20, "capacity_hours": 4, "effort_hours": 3})
+        assert response.status_code == 400
