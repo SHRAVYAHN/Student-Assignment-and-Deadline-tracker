@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Achievements — StudyFlow{% endblock %}
+{% block content %}
+<div class="welcome-row"><div><div class="eyebrow">CELEBRATE YOUR PROGRESS</div><h1>Motivation & Achievements <span class="wave">✦</span></h1><p class="muted">Every little win is proof that you're moving forward.</p></div><div class="date-pill">✧ &nbsp; Keep showing up</div></div>
+<section class="achievement-hero"><div><span class="eyebrow">YOUR ACHIEVEMENT SCORE</span><h2>{{ earned_count }} <small>/ {{ badge_count }} badges earned</small></h2><p>Keep learning, keep growing. Your progress belongs to you.</p></div><div class="achievement-medal">🏆</div></section>
+<div class="achievement-stats"><div class="mini-stat"><span>Assignments completed</span><strong>{{ completed_assignments }}</strong></div><div class="mini-stat"><span>Study goals completed</span><strong>{{ completed_study_tasks }}</strong></div><div class="mini-stat"><span>Focus time logged</span><strong>{{ (focus_minutes // 60) }}h {{ focus_minutes % 60 }}m</strong></div><div class="mini-stat"><span>Current study streak</span><strong>{{ streak }} days 🔥</strong></div></div>
+<section class="panel badge-panel"><div class="panel-heading"><div><span class="eyebrow">YOUR MILESTONES</span><h2>Badge collection</h2><p class="muted">Complete challenges to unlock each badge.</p></div></div><div class="badge-grid">{% for badge in badges %}<article class="badge-card {% if not badge.earned %}locked{% endif %}"><div class="badge-art">{{ badge.icon }}</div><div><strong>{{ badge.name }}</strong><p>{{ badge.detail }}</p><span class="badge-state">{% if badge.earned %}✓ Unlocked{% else %}🔒 Keep going{% endif %}</span></div></article>{% endfor %}</div></section>
+<section class="quote-card"><span>“</span><div><strong>Progress, not perfection.</strong><p>You don't have to do everything today. Just take the next small step.</p></div><span class="quote-star">✦</span></section>
+{% endblock %}
