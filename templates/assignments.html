@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}My Assignments — StudyFlow{% endblock %}
+{% block content %}
+<div class="welcome-row"><div><div class="eyebrow">YOUR WORKLOAD</div><h1>My Assignments</h1><p class="muted">All your pending and completed coursework in one place.</p></div><a class="primary-btn" href="{{ url_for('add_assignment') }}">＋ New assignment</a></div>
+<section class="panel assignments-panel standalone-assignments">
+ <div class="panel-heading"><div><span class="eyebrow">ASSIGNMENT LIST</span><h2>{{ assignments|length }} total assignments</h2><p class="muted">Sorted by due date, with completed work included.</p></div></div>
+ {% if assignments %}
+ <div class="assignment-list">{% for assignment in assignments %}
+ <article class="assignment-item"><div class="assignment-symbol">{{ assignment.subject[:1]|upper }}</div><div class="assignment-info"><strong>{{ assignment.title }}</strong><span>{{ assignment.subject }} <i>·</i> Due {{ assignment.due_date.strftime('%d %b %Y') }}</span>{% if assignment.description %}<small class="assignment-description">{{ assignment.description }}</small>{% endif %}</div><span class="priority priority-{{ assignment.priority|lower }}">{{ assignment.priority }}</span><span class="status {% if assignment.status == 'Completed' %}status-done{% else %}status-pending{% endif %}">{{ assignment.status }}</span><div class="item-actions"><a href="{{ url_for('edit_assignment', assignment_id=assignment.id) }}" title="Edit">✎</a><form method="POST" action="{{ url_for('delete_assignment', assignment_id=assignment.id) }}" onsubmit="return confirm('Delete this assignment?')"><button type="submit" title="Delete">×</button></form>{% if assignment.status != 'Completed' %}<form method="POST" action="{{ url_for('complete_assignment', assignment_id=assignment.id) }}"><button type="submit" title="Mark complete">✓</button></form>{% endif %}</div></article>
+ {% endfor %}</div>
+ {% else %}<div class="empty-state"><div>✦</div><h3>No assignments yet</h3><p>Add your first assignment and it will appear here.</p><a class="primary-btn" href="{{ url_for('add_assignment') }}">＋ Add your first assignment</a></div>{% endif %}
+</section>
+{% endblock %}

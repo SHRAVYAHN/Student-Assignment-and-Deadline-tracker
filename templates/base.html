@@ -1,33 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Student Assignment Tracker</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
-</head>
-
-<body>
-
-    <header>
-        <h2>Student Assignment & Deadline Tracker</h2>
-    </header>
-
-    <main>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        {% endwith %}
-
-        {% block content %}
-        {% endblock %}
-
-    </main>
-
-</body>
-</html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}StudyFlow — Student Assignment Tracker{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+{% if current_user.is_authenticated %}
+<div class="app-shell"><aside class="sidebar"><a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-mark">S</span><span>studyflow<small>STUDENT WORKSPACE</small></span></a><div class="side-label">WORKSPACE</div><nav class="side-nav">
+<a class="{% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span>▦</span> Dashboard</a>
+<a class="{% if request.endpoint == 'assignments' %}active{% endif %}" href="{{ url_for('assignments') }}"><span>☷</span> My Assignments</a>
+<a href="{{ url_for('dashboard') }}#calendar"><span>▦</span> Calendar</a>
+<a class="{% if request.endpoint == 'study_planner' %}active{% endif %}" href="{{ url_for('study_planner') }}"><span>✎</span> Study Planner</a>
+<a class="{% if request.endpoint == 'focus_timer' %}active{% endif %}" href="{{ url_for('focus_timer') }}"><span>◷</span> Focus Mode</a>
+<a class="{% if request.endpoint == 'achievements' %}active{% endif %}" href="{{ url_for('achievements') }}"><span>♛</span> Achievements</a>
+<a class="{% if request.endpoint == 'deadline_dna' %}active{% endif %}" href="{{ url_for('deadline_dna') }}"><span>⌁</span> Deadline DNA</a>
+</nav><div class="side-bottom"><div class="tip-card"><span class="tip-spark">✦</span><strong>Small steps add up.</strong><p>Stay consistent. Your future self will thank you.</p></div><a class="side-user" href="{{ url_for('logout') }}"><span class="avatar">{{ current_user.name[:1]|upper }}</span><span><b>{{ current_user.name }}</b><small>Sign out</small></span><span class="logout">↗</span></a></div></aside><main class="main-area"><header class="topbar"><div><span class="eyebrow">YOUR ACADEMIC SPACE</span><strong>Make today count.</strong></div><div class="top-actions"><span class="today">Your study dashboard</span><a class="primary-btn small-btn" href="{{ url_for('add_assignment') }}">＋ New assignment</a></div></header><section class="page-content">
+{% else %}
+<div class="auth-shell"><div class="auth-brand"><span class="brand-mark">S</span><span>studyflow</span></div>
+{% endif %}
+{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-wrap">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+{% if current_user.is_authenticated %}</section><footer class="footer">Made for focused minds <span>✦</span></footer></main></div>{% else %}</div>{% endif %}
+<script>document.querySelectorAll('form').forEach(form=>form.addEventListener('submit',()=>{const b=form.querySelector('button[type="submit"]');if(b){b.disabled=true;b.textContent='Please wait…';}}));</script>{% block scripts %}{% endblock %}</body></html>
