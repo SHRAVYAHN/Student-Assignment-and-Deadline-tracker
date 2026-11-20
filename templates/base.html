@@ -9,6 +9,7 @@
 <a class="{% if request.endpoint == 'study_planner' %}active{% endif %}" href="{{ url_for('study_planner') }}"><span>✎</span> Study Planner</a>
 <a class="{% if request.endpoint == 'focus_timer' %}active{% endif %}" href="{{ url_for('focus_timer') }}"><span>◷</span> Focus Mode</a>
 <a class="{% if request.endpoint == 'achievements' %}active{% endif %}" href="{{ url_for('achievements') }}"><span>♛</span> Achievements</a>
+<a class="{% if request.endpoint == 'deadline_dna' %}active{% endif %}" href="{{ url_for('deadline_dna') }}"><span>⌁</span> Deadline DNA</a>
 </nav><div class="side-bottom"><div class="tip-card"><span class="tip-spark">✦</span><strong>Small steps add up.</strong><p>Stay consistent. Your future self will thank you.</p></div><a class="side-user" href="{{ url_for('logout') }}"><span class="avatar">{{ current_user.name[:1]|upper }}</span><span><b>{{ current_user.name }}</b><small>Sign out</small></span><span class="logout">↗</span></a></div></aside><main class="main-area"><header class="topbar"><div><span class="eyebrow">YOUR ACADEMIC SPACE</span><strong>Make today count.</strong></div><div class="top-actions"><span class="today">Your study dashboard</span><a class="primary-btn small-btn" href="{{ url_for('add_assignment') }}">＋ New assignment</a></div></header><section class="page-content">
 {% else %}
 <div class="auth-shell"><div class="auth-brand"><span class="brand-mark">S</span><span>studyflow</span></div>
