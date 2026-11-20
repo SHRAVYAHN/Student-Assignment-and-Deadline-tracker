@@ -200,6 +200,101 @@ def achievements():
                            streak=streak)
 
 
+def _deadline_dna_schedule(assignments, study_tasks, today, capacity_hours, shifted_id=None, delay_days=0, selected_effort=None):
+    """Build a transparent 14-day, capacity-based what-if schedule."""
+    horizon = 14
+    fixed = [0.0 for _ in range(horizon + 1)]
+    remaining = [capacity_hours for _ in range(horizon + 1)]
+    jobs = []
+    for task in study_tasks:
+        day_index = (task.planned_date - today).days
+        if 0 <= day_index <= horizon and task.status != 'Completed':
+            fixed[day_index] += task.duration_minutes / 60.0
+    for item in assignments:
+        if item.status == 'Completed':
+            continue
+        due = item.due_date + (timedelta(days=delay_days) if item.id == shifted_id else timedelta())
+        due_index = max(0, min(horizon, (due - today).days))
+        default_effort = {'High': 4.0, 'Medium': 3.0, 'Low': 2.0}.get(item.priority, 2.0)
+        effort = selected_effort if item.id == shifted_id and selected_effort is not None else default_effort
+        jobs.append((due_index, item.id, effort))
+    loads = fixed[:]
+    for due_index, _, effort in sorted(jobs, key=lambda job: (job[0], job[1])):
+        left = effort
+        for day_index in range(due_index, -1, -1):
+            place = min(left, remaining[day_index])
+            loads[day_index] += place
+            remaining[day_index] -= place
+            left -= place
+            if left <= 0.0001:
+                break
+        if left > 0:
+            loads[0] += left
+    overload = [max(0.0, value - capacity_hours) for value in loads]
+    return {
+        'loads': [round(value, 2) for value in loads],
+        'overload_hours': round(sum(overload), 2),
+        'overloaded_days': sum(1 for value in overload if value > 0.0001),
+        'peak_hours': round(max(loads), 2),
+    }
+
+
+@app.route('/deadline-dna')
+@login_required
+def deadline_dna():
+    assignments = Assignment.query.filter_by(user_id=current_user.id).filter(Assignment.status != 'Completed').order_by(Assignment.due_date.asc()).all()
+    study_tasks = StudyTask.query.filter_by(user_id=current_user.id).filter(StudyTask.status != 'Completed').all()
+    return render_template('deadline_dna.html', assignments=assignments, today=date.today(),
+                           effort_defaults={'High': 4, 'Medium': 3, 'Low': 2})
+
+
+@app.route('/deadline-dna/simulate', methods=['POST'])
+@login_required
+def simulate_deadline_ripple():
+    data = request.get_json(silent=True) or {}
+    try:
+        assignment_id = int(data.get('assignment_id', 0))
+        delay_days = int(data.get('delay_days', 0))
+        capacity_hours = float(data.get('capacity_hours', 4))
+        effort_hours = float(data.get('effort_hours', 3))
+    except (TypeError, ValueError):
+        return jsonify({'ok': False, 'message': 'Please enter valid simulation values.'}), 400
+    if delay_days < 0 or delay_days > 14 or not (1 <= capacity_hours <= 16) or not (0.5 <= effort_hours <= 16):
+        return jsonify({'ok': False, 'message': 'Use a delay from 0–14 days, daily capacity from 1–16 hours and effort from 0.5–16 hours.'}), 400
+    selected = Assignment.query.filter_by(id=assignment_id, user_id=current_user.id).filter(Assignment.status != 'Completed').first()
+    if selected is None:
+        return jsonify({'ok': False, 'message': 'That assignment is no longer available. Refresh the page and try again.'}), 404
+    assignments = Assignment.query.filter_by(user_id=current_user.id).filter(Assignment.status != 'Completed').all()
+    study_tasks = StudyTask.query.filter_by(user_id=current_user.id).filter(StudyTask.status != 'Completed').all()
+    today = date.today()
+    before = _deadline_dna_schedule(assignments, study_tasks, today, capacity_hours)
+    after = _deadline_dna_schedule(assignments, study_tasks, today, capacity_hours,
+                                   shifted_id=selected.id, delay_days=delay_days,
+                                   selected_effort=effort_hours)
+    delta = round(after['overload_hours'] - before['overload_hours'], 2)
+    if delay_days == 0:
+        headline = 'Your current workload forecast'
+        advice = 'No deadline was moved. Use this as your baseline and compare a possible change.'
+    elif delta > 0:
+        headline = 'This delay creates extra pressure'
+        advice = f'The change adds {delta:g} overload hours. Try protecting a study block earlier in the week or reducing another commitment before postponing.'
+    elif delta < 0:
+        headline = 'The later date creates breathing room'
+        advice = f'The simulation reduces overloaded work by {abs(delta):g} hours. Keep the newly freed time reserved for this assignment.'
+    else:
+        headline = 'The pressure moves, but does not disappear'
+        advice = 'The total overload stays about the same. Check which days become busier and plan a buffer before the revised deadline.'
+    labels = [(today + timedelta(days=i)).strftime('%a, %d %b') for i in range(15)]
+    return jsonify({
+        'ok': True, 'assignment': selected.title, 'original_due': selected.due_date.isoformat(),
+        'simulated_due': (selected.due_date + timedelta(days=delay_days)).isoformat(),
+        'delay_days': delay_days, 'capacity_hours': capacity_hours,
+        'before': before, 'after': after, 'overload_delta': delta,
+        'headline': headline, 'advice': advice, 'labels': labels,
+        'method_note': 'Planning estimate, not a prediction of grades or guaranteed completion. Assignment effort is estimated from priority unless adjusted here; your planned study sessions count as fixed workload.'
+    })
+
+
 @app.route('/add-assignment', methods=['GET', 'POST'])
 @login_required
 def add_assignment():
